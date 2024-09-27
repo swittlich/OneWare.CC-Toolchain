@@ -1,7 +1,7 @@
-![Icon](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/main/Icon.png)
+![Icon](https://colognechip.com/wp-content/uploads/cropped-cologne_chip_logocmyk.png)
 
 Not working!
-Toolchain for CologneChip-FPGAs. 
+Toolchain for CologneChip-FPGAs. This is not an offical plugin. 
 
 ### Get Started
 
