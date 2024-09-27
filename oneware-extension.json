@@ -1,7 +1,7 @@
 {
   "category": "Toolchains",
   "type": "Plugin",
-  "name": "OneWare CologneChip Extension",
+  "name": "CologneChip Extension",
   "id": "OneWare.CologneChip",
   "description": "CologneChip-Toolchain for OneWare",
   "license": "MIT",
