@@ -4,6 +4,8 @@ using OneWare.Essentials.ViewModels;
 using Prism.Ioc;
 using Prism.Modularity;
 
+using OneWare.UniversalFpgaProjectSystem.Services;
+
 namespace OneWare.CologneChip;
 
 public class OneWareCologneChipModule : IModule
@@ -14,6 +16,7 @@ public class OneWareCologneChipModule : IModule
 
     public void OnInitialized(IContainerProvider containerProvider)
     {
+        containerProvider.Resolve<FpgaService>().RegisterToolchain<CologneChipToolchain>();
         //This example adds a context menu for .vhd files
         containerProvider.Resolve<IProjectExplorerService>().RegisterConstructContextMenu((selected, menuItems) =>
         {
