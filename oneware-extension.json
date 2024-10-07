@@ -28,7 +28,7 @@
       "targets": [
         {
           "target": "all",
-          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.1/OneWare.CologneChip_0.1_win-x64.zip"
+          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.1/OneWare.CologneChip_0.1-all.zip"
         }
       ]
     }
