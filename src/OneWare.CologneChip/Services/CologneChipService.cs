@@ -20,37 +20,50 @@ public class CologneChipService(
         try
         {
             var properties = FpgaSettingsParser.LoadSettings(project, fpgaModel.Fpga.Name);
-
             var top = project.TopEntity?.Header ?? throw new Exception("TopEntity not set!");
-
-            var includedFiles = project.Files
-                .Where(x => x.Extension is ".v" or ".sv")
-                .Where(x => !project.CompileExcluded.Contains(x))
-                .Where(x => !project.TestBenches.Contains(x))
-                .Select(x => x.RelativePath);
-
+            
             var buildDir = Path.Combine(project.FullPath, "build");
             Directory.CreateDirectory(buildDir);
 
             dockService.Show<IOutputService>();
-
+            
             var start = DateTime.Now;
-            outputService.WriteLine("Compiling...\n==================");
 
             var yosysSynthTool = properties.GetValueOrDefault("yosysToolchainYosysSynthTool") ??
                                  throw new Exception("Yosys Tool not set!");
+            
+            var (topName, topLanguage) = (top.Split('.').First(), top.Split('.').Last());
 
-
-            var top_name = top.Split('.').First();
-            List<string> yosysArguments =
-                ["-q", "-p", $"ghdl --warn-no-binding -C --ieee=synopsys {top} -e {top_name}; {yosysSynthTool} -nomx8 -top {top_name} -vlog build/{top_name}_synth.v"];
+            List<string> yosysArguments = [];
+            List<string> includedExtensions = [];
+            
+            switch (topLanguage)
+            {
+                case "vhd":
+                    outputService.WriteLine("VHDL Compiling...\n===============");
+                    yosysArguments = ["-q", "-p", $"ghdl --warn-no-binding -C --ieee=synopsys ./../{top} -e {topName}; {yosysSynthTool} -nomx8 -top {topName} -vlog {topName}_synth.v"];
+                    includedExtensions = [];
+                    break;
+                case "v": 
+                    outputService.WriteLine("Verilog Compiling...\n==============");
+                    yosysArguments = ["-q", "-p", $"{yosysSynthTool} -nomx8 -top {topName} -vlog {topName}_synth.v"];
+                    includedExtensions = [".v", ".sv"];
+                    break;
+            }
+            
+            var includedFiles = project.Files
+                .Where(x => includedExtensions.Contains(x.Extension))
+                .Where(x => !project.CompileExcluded.Contains(x))
+                .Where(x => !project.TestBenches.Contains(x))
+                .Select(x => $"./../{x.RelativePath}");
+            
             yosysArguments.AddRange(properties.GetValueOrDefault("yosysToolchainYosysFlags")?.Split(' ',
                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? []);
             yosysArguments.AddRange(includedFiles);
 
-            List<string> prArguments = ["-i", $"build/{top_name}_synth.v", "-o", top_name, $"-ccf project.ccf -cCP"]; 
+            List<string> prArguments = ["-i", $"{topName}_synth.v", "-o", topName, $"-ccf ./../project.ccf -cCP"]; 
             
-            var (success, _) = await childProcessService.ExecuteShellAsync("yosys", yosysArguments, $"{project.FullPath}",
+            var (success, _) = await childProcessService.ExecuteShellAsync("yosys", yosysArguments, $"{project.FullPath}/build",
                 "Running yosys...", AppState.Loading, true, x =>
                 {
                     if (x.StartsWith("Error:"))
@@ -64,7 +77,7 @@ public class CologneChipService(
                 });
             
             success = success && (await childProcessService.ExecuteShellAsync("p_r", prArguments,
-                project.FullPath, $"Running P_R...", AppState.Loading, true, null, s =>
+                $"{project.FullPath}/build", $"Running P_R...", AppState.Loading, true, null, s =>
                 {
                     Dispatcher.UIThread.Post(() => { outputService.WriteLine(s); });
                     return true;

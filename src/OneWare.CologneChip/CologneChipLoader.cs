@@ -60,19 +60,21 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
         var state = GetProgrammerState(project);
         
         List<string> fpgaArgs = [];
+        var bitStreamPath = $"{CologneChipConstantService.Instance.GetBuildPath(project.RelativePath)}{topName}_00.cfg.bit";
+        
         switch (state)
         {
             case ProgrammerState.JTagFlash:
-                fpgaArgs = ["-b", "gatemate_evb_jtag", "-f", "--verify", $"{topName}_00.cfg.bit"];
+                fpgaArgs = ["-b", "gatemate_evb_jtag", "-f", "--verify", $"{bitStreamPath}"];
                 break;
             case ProgrammerState.JTagMemory:
-                fpgaArgs = ["-b", "gatemate_evb_jtag", "-m", $"{topName}_00.cfg.bit"];
+                fpgaArgs = ["-b", "gatemate_evb_jtag", "-m",  $"{bitStreamPath}"];
                 break;
             case ProgrammerState.SpiFlash:
-                fpgaArgs = ["-b", "gatemate_evb_spi", $"{topName}_00.cfg.bit"];
+                fpgaArgs = ["-b", "gatemate_evb_spi",  $"{bitStreamPath}"];
                 break;
             case ProgrammerState.SpiMemory:
-                fpgaArgs = ["-b", "gatemate_evb_spi", "-m", $"{topName}_00.cfg.bit"];
+                fpgaArgs = ["-b", "gatemate_evb_spi", "-m",  $"{bitStreamPath}"];
                 break;
             case ProgrammerState.IllegalState:
                 logger.Error("IllegalState");

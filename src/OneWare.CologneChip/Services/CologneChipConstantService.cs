@@ -16,4 +16,10 @@ public sealed class CologneChipConstantService
     public string CologneChipLongTermModeKey => "cologneChipProgrammerLongTermMode";
 
     // Weitere Konstanten können hier hinzugefügt werden
+    public string GetBuildPath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return "./build/";
+        return $"{path.TrimEnd('/')}/build/";
+    }
 }
