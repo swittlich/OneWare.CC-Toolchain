@@ -1,4 +1,4 @@
- ![Icon](https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/CologneCathedralSilhouette.svg/352px-CologneCathedralSilhouette.svg.png)
+ ![Icon](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/main/Icon.png)
  
 Toolchain for CologneChip-FPGAs. This is not an official plugin. 
 
