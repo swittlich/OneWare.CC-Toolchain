@@ -17,6 +17,7 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
     
     private readonly ComboBoxSetting _shortTermModeSetting;
     private readonly ComboBoxSetting _longTermModeSetting;
+    private readonly ComboBoxSetting _typeSetting;
     private readonly Dictionary<string, string> _settings;
     public SettingsCollectionViewModel SettingsCollection { get; } = new("CologneChip Loader Settings")
     {
@@ -34,31 +35,35 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
         var defaultProperties = fpga.Properties;
         _settings = FpgaSettingsParser.LoadSettings(projectRoot, fpga.Name);
         
-        
+        _typeSetting = new ComboBoxSetting("Type", "Programmer or EVB?",
+            defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipTypeKey) ?? "", ["EVB", "Programmer"]);
         
         _shortTermModeSetting = new ComboBoxSetting("Short Term Mode", "Mode to use for Short Term Programming",
-            defaultProperties.GetValueOrDefault(CologneChipConstantService.Instance.CologneChipShortTermModeKey) ?? "", ["JTAG", "SPI"]);
+            defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipShortTermModeKey) ?? "", ["JTAG", "SPI"]);
         
         _longTermModeSetting = new ComboBoxSetting("Long Term Mode", "Mode to use for Long Term Programming",
-            defaultProperties.GetValueOrDefault(CologneChipConstantService.Instance.CologneChipLongTermModeKey) ?? "", ["JTAG", "SPI"]);
+            defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipLongTermModeKey) ?? "", ["JTAG", "SPI"]);
         
-        if (_settings.TryGetValue(CologneChipConstantService.Instance.CologneChipShortTermModeKey, out var qPstMode))
+        if (_settings.TryGetValue(CologneChipConstantService.CologneChipShortTermModeKey, out var qPstMode))
             _shortTermModeSetting.Value = qPstMode;
         
-        if (_settings.TryGetValue(CologneChipConstantService.Instance.CologneChipLongTermModeKey, out var qPstOperation))
+        if (_settings.TryGetValue(CologneChipConstantService.CologneChipLongTermModeKey, out var qPstOperation))
             _longTermModeSetting.Value = qPstOperation;
-
         
+        if (_settings.TryGetValue(CologneChipConstantService.CologneChipLongTermModeKey, out var qPstType))
+            _typeSetting.Value = qPstType;
+
+        SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_typeSetting));
         SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_shortTermModeSetting));
         SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_longTermModeSetting));
-
     }
     
     
     public void Save(FlexibleWindow flexibleWindow)
     {
-        _settings[CologneChipConstantService.Instance.CologneChipShortTermModeKey] = _shortTermModeSetting.Value.ToString()!;
-        _settings[CologneChipConstantService.Instance.CologneChipLongTermModeKey] = _longTermModeSetting.Value.ToString()!;
+        _settings[CologneChipConstantService.CologneChipShortTermModeKey] = _shortTermModeSetting.Value.ToString()!;
+        _settings[CologneChipConstantService.CologneChipLongTermModeKey] = _longTermModeSetting.Value.ToString()!;
+        _settings[CologneChipConstantService.CologneChipTypeKey] = _typeSetting.Value.ToString()!;
         
         FpgaSettingsParser.SaveSettings(_projectRoot, _fpga.Name, _settings);
         

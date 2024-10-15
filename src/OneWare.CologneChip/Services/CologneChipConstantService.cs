@@ -12,8 +12,9 @@ public sealed class CologneChipConstantService
     public static CologneChipConstantService Instance => _instance.Value;
 
     // Konstanten als Eigenschaften oder Felder
-    public string CologneChipShortTermModeKey => "cologneChipProgrammerShortTermMode";
-    public string CologneChipLongTermModeKey => "cologneChipProgrammerLongTermMode";
+    public static string CologneChipShortTermModeKey => "cologneChipProgrammerShortTermMode";
+    public static string CologneChipLongTermModeKey => "cologneChipProgrammerLongTermMode";
+    public static string CologneChipTypeKey => "cologneChipProgrammerType";
 
     // Weitere Konstanten können hier hinzugefügt werden
     public string GetBuildPath(string path)

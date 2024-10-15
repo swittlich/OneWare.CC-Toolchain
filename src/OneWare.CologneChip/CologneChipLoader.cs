@@ -19,6 +19,10 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
         JTagMemory,
         SpiFlash,
         SpiMemory,
+        PgmJTagMemory,
+        PgmSpiMemory,
+        PgmSpiFlash,
+        PgmJTagFlash,
         IllegalState,
     }
 
@@ -28,25 +32,54 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
         if (fpga == null) return ProgrammerState.IllegalState;
         
         var properties = FpgaSettingsParser.LoadSettings(projectRoot, fpga);
+        var ccType = properties.GetValueOrDefault(CologneChipConstantService.CologneChipTypeKey) ?? "EVB";
+        var longTermProgramming =
+            settingsService.GetSettingValue<bool>("UniversalFpgaProjectSystem_LongTermProgramming");
+        var longTermMode = properties.GetValueOrDefault(CologneChipConstantService.CologneChipLongTermModeKey) ?? "JTAG";
+        var shortTermMode = properties.GetValueOrDefault(CologneChipConstantService.CologneChipShortTermModeKey) ?? "JTAG";
         
-        if (settingsService.GetSettingValue<bool>("UniversalFpgaProjectSystem_LongTermProgramming"))
+        switch (longTermProgramming)
         {
-            var longTermMode = properties.GetValueOrDefault(CologneChipConstantService.Instance.CologneChipLongTermModeKey) ?? "JTAG";
-            return longTermMode switch
+            case true when ccType == "EVB":
             {
-                "JTAG" => ProgrammerState.JTagFlash,
-                "SPI" => ProgrammerState.SpiFlash,
-                _ => ProgrammerState.IllegalState
-            };
-        } 
-        
-        var shortTermMode = properties.GetValueOrDefault(CologneChipConstantService.Instance.CologneChipShortTermModeKey) ?? "JTAG";
-        return shortTermMode switch
-        {
-            "JTAG" => ProgrammerState.JTagMemory,
-            "SPI" => ProgrammerState.SpiMemory,
-            _ => ProgrammerState.IllegalState
-        };
+                return longTermMode switch
+                {
+                    "JTAG" => ProgrammerState.JTagFlash,
+                    "SPI" => ProgrammerState.SpiFlash,
+                    _ => ProgrammerState.IllegalState
+                };
+            }
+            case false when ccType == "EVB":
+            {
+                
+                return shortTermMode switch
+                {
+                    "JTAG" => ProgrammerState.JTagMemory,
+                    "SPI" => ProgrammerState.SpiMemory,
+                    _ => ProgrammerState.IllegalState
+                };
+            }
+            case true when ccType == "Programmer":
+            {
+                return longTermMode switch
+                {
+                    "JTAG" => ProgrammerState.PgmJTagFlash,
+                    "SPI" => ProgrammerState.PgmSpiFlash,
+                    _ => ProgrammerState.IllegalState
+                };
+            }
+            case false when ccType == "Programmer":
+            {
+                return shortTermMode switch
+                {
+                    "JTAG" => ProgrammerState.PgmJTagMemory,
+                    "SPI" => ProgrammerState.PgmSpiMemory,
+                    _ => ProgrammerState.IllegalState
+                };
+            }
+            default:
+                return ProgrammerState.IllegalState;
+        }
     }
     
     public async Task DownloadAsync(UniversalFpgaProjectRoot project)
@@ -75,6 +108,18 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
                 break;
             case ProgrammerState.SpiMemory:
                 fpgaArgs = ["-b", "gatemate_evb_spi", "-m",  $"{bitStreamPath}"];
+                break;
+            case ProgrammerState.PgmJTagMemory:
+                fpgaArgs = ["-c", "gatemate_pgm",  $"{bitStreamPath}"];
+                break;
+            case ProgrammerState.PgmJTagFlash:
+                fpgaArgs = ["-c", "gatemate_pgm", "-f", $"{bitStreamPath}"];
+                break;
+            case ProgrammerState.PgmSpiMemory:
+                fpgaArgs = ["-b", "gatemate_pgm_spi",  $"{bitStreamPath}"];
+                break;
+            case ProgrammerState.PgmSpiFlash:
+                fpgaArgs = ["-b", "gatemate_pgm_spi ", "-f", $"{bitStreamPath}"];
                 break;
             case ProgrammerState.IllegalState:
                 logger.Error("IllegalState");

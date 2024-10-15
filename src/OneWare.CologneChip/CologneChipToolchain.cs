@@ -43,24 +43,16 @@ public class CologneChipToolchain(CologneChipService cologneChipService, ILogger
                         
                         if (match.Success)
                         {
-                            // Extrahiere pin-name, pin-location und opt.-constraints
-                            var pinName = match.Groups["pinName"].Value;
-                            var pinLocation = match.Groups["pinLocation"].Value;
+                            // extract pin-name, pin-location and opt.-constraints
+                            var signal = match.Groups["pinName"].Value;
+                            var pin = match.Groups["pinLocation"].Value;
                             var constraints = match.Groups["constraints"].Success ? match.Groups["constraints"].Value : null;
                             
-                            var signal = pinName;
-                            var pin = pinLocation;
-
                             if (fpga.PinModels.TryGetValue(pin, out var pinModel) &&
                                 fpga.NodeModels.TryGetValue(signal, out var signalModel))
                                 fpga.Connect(pinModel, signalModel);
 
                             // fpga.Constraint(constraints);
-                            
-                            // Ausgabe
-                            Console.WriteLine($"Pin Name: {pinName}");
-                            Console.WriteLine($"Pin Location: {pinLocation}");
-                            Console.WriteLine($"Constraints: {constraints}");
                         }
                         else
                         {
@@ -82,19 +74,64 @@ public class CologneChipToolchain(CologneChipService cologneChipService, ILogger
 
         try
         {
-            var pcf = "";
+            List<string> lines = [];
+            List<string> result = [];
             if (File.Exists(pcfPath))
             {
-                var existingPcf = File.ReadAllText(pcfPath);
-                existingPcf = RemoveLine(existingPcf, "NET");
-                pcf = existingPcf.Trim();
+                lines = [..File.ReadAllLines(pcfPath)];
+            }
+            
+            var pinModels = fpga.PinModels.Where(x => x.Value.ConnectedNode is not null).Select(conn => conn.Value).ToList();
+            var pinModelsCache = pinModels.ToList();
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith('#') || string.IsNullOrWhiteSpace(line))
+                {
+                    result.Add(line);
+                    continue;
+                }
+
+                if (!line.StartsWith("NET")) continue;
+                
+                var found = false;
+                foreach (var pin in pinModels)
+                {
+                    if (!line.Contains(pin.ConnectedNode!.Node.Name)) continue;
+                        
+                    var commentIndex = line.IndexOf('#', StringComparison.Ordinal);
+                    var comment = commentIndex != -1 ? line[commentIndex..] : string.Empty;
+                    
+                    var constraintIndex = line.IndexOf('|');
+                    var semicolonIndex = line.IndexOf(';');
+                    
+                    var constraint = constraintIndex != -1 
+                                     && constraintIndex < semicolonIndex
+                                     && (constraintIndex < commentIndex || commentIndex < 0 )
+                        ? line[constraintIndex..semicolonIndex] : string.Empty;
+                    
+                    var newLine = $"\nNET \"{pin.ConnectedNode!.Node.Name}\" Loc =  \"{pin.Pin.Name}\"";
+                    
+                    if (constraint != string.Empty) newLine += $" {constraint}";
+                    
+                    newLine += ";";
+                    
+                    if (commentIndex != -1) newLine += $" {comment}";
+                    
+                    result.Add(newLine.Trim());
+                    pinModelsCache.Remove(pin);
+                    found = true;
+                    break;
+                }
+
+                if (!found)
+                {
+                    result.Add($"# {line}");
+                }
             }
 
-            foreach (var conn in fpga.PinModels.Where(x => x.Value.ConnectedNode is not null))
-                pcf += $"\nNET \"{conn.Value.ConnectedNode!.Node.Name}\" Loc =  \"{conn.Value.Pin.Name}\";";
-            pcf = pcf.Trim() + '\n';
-
-            File.WriteAllText(pcfPath, pcf);
+            result.AddRange(pinModelsCache.Select(pin => $"\nNET \"{pin.ConnectedNode!.Node.Name}\" Loc =  \"{pin.Pin.Name}\";"));
+            File.WriteAllLines(pcfPath, result);
         }
         catch (Exception e)
         {
@@ -105,19 +142,5 @@ public class CologneChipToolchain(CologneChipService cologneChipService, ILogger
     public Task<bool> CompileAsync(UniversalFpgaProjectRoot project, FpgaModel fpga)
     {
         return cologneChipService.SynthAsync(project, fpga);
-    }
-    
-    private string RemoveLine(string file, string find)
-    {
-        var startIndex = file.IndexOf(find, StringComparison.Ordinal);
-        while (startIndex > -1)
-        {
-            var endIndex = file.IndexOf('\n', startIndex);
-            if (endIndex == -1) endIndex = file.Length - 1;
-            file = file.Remove(startIndex, endIndex - startIndex + 1);
-            startIndex = file.IndexOf(find, startIndex, StringComparison.Ordinal);
-        }
-
-        return file;
     }
 }

@@ -35,9 +35,9 @@ public class OneWareCologneChipModule : IModule
         containerProvider.Resolve<FpgaService>().RegisterToolchain<CologneChipToolchain>();
         containerProvider.Resolve<FpgaService>().RegisterLoader<CologneChipLoader>();
         
-        settingsService.RegisterTitledPath("Tools", "CologneChip", "CologneChip_Path", "CologneChip Toolchain Path",
+        settingsService.RegisterTitledFolderPath("Tools", "CologneChip", "CologneChip_Path",
+            "CologneChip Toolchain Path",
             "Sets the path for CologneChip Toolchain", defaultCologneChipPath, null, null, IsCologneChipPathValid);
-        
         settingsService.GetSettingObservable<string>("CologneChip_Path").Subscribe(x =>
         {
             if (string.IsNullOrEmpty(x)) return;

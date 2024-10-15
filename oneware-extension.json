@@ -14,6 +14,10 @@
     {
       "title": "License",
       "contentUrl": "https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/main/License.md"
+    },
+    {
+      "title": "Release Notes",
+      "contentUrl": "https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/main/Release.md"
     }
   ],
   "links": [
@@ -29,6 +33,15 @@
         {
           "target": "all",
           "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.1/OneWare.CologneChip_0.1_all.zip"
+        }
+      ]
+    },
+    {
+      "version": "0.2",
+      "targets": [
+        {
+          "target": "all",
+          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.2/OneWare.CologneChip_0.2_all.zip"
         }
       ]
     }
