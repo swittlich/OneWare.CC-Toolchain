@@ -10,7 +10,7 @@ The toolchain for the GateMate FPGA boards. For already provided boards have a l
 - [Toolchain](https://www.colognechip.com/docs/ug1002-toolchain-install-latest.pdf)
 - [OneWare](https://one-ware.com)
 
-![image](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/main/Icon.png)
+![image](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/Icon.png)
 
 # Intallation Guide 
 

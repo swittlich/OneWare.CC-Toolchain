@@ -1,4 +1,4 @@
- ![Icon](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/main/Icon.png)
+ ![Icon](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/Icon.png)
  
 Toolchain for CologneChip-FPGAs. This is not an official plugin. 
 
