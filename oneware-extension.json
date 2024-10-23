@@ -50,7 +50,7 @@
       "targets": [
         {
           "target": "all",
-          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.2/OneWare.CologneChip_0.3_all.zip"
+          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.3/OneWare.CologneChip_0.3_all.zip"
         }
       ]
     }
