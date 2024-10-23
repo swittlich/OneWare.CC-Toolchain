@@ -1,11 +1,12 @@
 using Avalonia.Media;
 using Avalonia.Threading;
-using OneWare.Essentials.Converters;
+using OneWare.CologneChip.Helpers;
 using OneWare.Essentials.Enums;
 using OneWare.Essentials.Models;
 using OneWare.Essentials.Services;
 using OneWare.UniversalFpgaProjectSystem.Models;
 using OneWare.UniversalFpgaProjectSystem.Parser;
+using Prism.Ioc;
 
 namespace OneWare.CologneChip.Services;
 
@@ -41,12 +42,12 @@ public class CologneChipService(
             {
                 case "vhd":
                     outputService.WriteLine("VHDL Compiling...\n===============");
-                    yosysArguments = ["-q", "-p", $"ghdl --warn-no-binding -C --ieee=synopsys ./../{top} -e {topName}; {yosysSynthTool} -nomx8 -top {topName} -vlog {topName}_synth.v"];
+                    yosysArguments = ["-q","-l ./../synth.log",  "-p", $"ghdl --warn-no-binding -C --ieee=synopsys ./../{top} -e {topName}; {yosysSynthTool} -nomx8 -top {topName} -vlog {topName}_synth.v"];
                     includedExtensions = [];
                     break;
                 case "v": 
                     outputService.WriteLine("Verilog Compiling...\n==============");
-                    yosysArguments = ["-q", "-p", $"{yosysSynthTool} -nomx8 -top {topName} -vlog {topName}_synth.v"];
+                    yosysArguments = ["-ql", "./../log/synth.log", "-p", $"{yosysSynthTool} -nomx8 -top {topName} -vlog {topName}_synth.v"];
                     includedExtensions = [".v", ".sv"];
                     break;
             }
@@ -61,7 +62,9 @@ public class CologneChipService(
                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? []);
             yosysArguments.AddRange(includedFiles);
 
-            List<string> prArguments = ["-i", $"{topName}_synth.v", "-o", topName, $"-ccf ./../project.ccf -cCP"]; 
+            var ccfFile = CologneChipSettingsHelper.GetConstraintFile(project);
+            
+            List<string> prArguments = ["-i", $"{topName}_synth.v", "-o", topName, $"-ccf ./../{ccfFile} -cCP"];
             
             var (success, _) = await childProcessService.ExecuteShellAsync("yosys", yosysArguments, $"{project.FullPath}/build",
                 "Running yosys...", AppState.Loading, true, x =>
@@ -75,6 +78,18 @@ public class CologneChipService(
                     outputService.WriteLine(x);
                     return true;
                 });
+            
+            
+            if (!success) {
+                var ignoreSynthExitCode = ContainerLocator.Container.Resolve<ISettingsService>().GetSettingValue<bool>(CologneChipConstantService.CologneChipSettingsIgnoreSynthExitCode);
+                if (ignoreSynthExitCode)
+                {
+                    ContainerLocator.Container.Resolve<ILogger>().Warning("The synthesis was terminated with an exit code other than zero");
+                    ContainerLocator.Container.Resolve<ILogger>().Warning($"Setting '{CologneChipConstantService.CologneChipSettingsIgnoreSynthExitCode}' to true");
+                    ContainerLocator.Container.Resolve<ILogger>().Warning($"Because of this setting, the route and placing tool is started anyway");
+                    success = true;
+                } 
+            }
             
             success = success && (await childProcessService.ExecuteShellAsync("p_r", prArguments,
                 $"{project.FullPath}/build", $"Running P_R...", AppState.Loading, true, null, s =>
@@ -107,6 +122,78 @@ public class CologneChipService(
                 $"{verilog.Header}.json", verilog.Header
             ],
             Path.GetDirectoryName(verilog.FullPath)!, "Create Netlist...");
+    }
+
+    public void SaveConnections(UniversalFpgaProjectRoot project, FpgaModel fpga)
+    {
+        var pcfPath = Path.Combine(project.FullPath, CologneChipSettingsHelper.GetConstraintFile(project));
+        
+        try
+        {
+            List<string> lines = [];
+            List<string> result = [];
+            if (File.Exists(pcfPath))
+            {
+                lines = [..File.ReadAllLines(pcfPath)];
+            }
+            
+            var pinModels = fpga.PinModels.Where(x => x.Value.ConnectedNode is not null).Select(conn => conn.Value).ToList();
+            var pinModelsCache = pinModels.ToList();
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith('#') || string.IsNullOrWhiteSpace(line))
+                {
+                    result.Add(line);
+                    continue;
+                }
+
+                if (!line.StartsWith("NET")) continue;
+                
+                var found = false;
+                foreach (var pin in pinModels)
+                {
+                    if (!line.Contains(pin.ConnectedNode!.Node.Name)) continue;
+                        
+                    var commentIndex = line.IndexOf('#', StringComparison.Ordinal);
+                    var comment = commentIndex != -1 ? line[commentIndex..] : string.Empty;
+                    
+                    var constraintIndex = line.IndexOf('|');
+                    var semicolonIndex = line.IndexOf(';');
+                    
+                    var constraint = constraintIndex != -1 
+                                     && constraintIndex < semicolonIndex
+                                     && (constraintIndex < commentIndex || commentIndex < 0 )
+                        ? line[constraintIndex..semicolonIndex] : string.Empty;
+                    
+                    var newLine = $"NET \"{pin.ConnectedNode!.Node.Name}\" Loc =  \"{pin.Pin.Name}\"";
+                    
+                    if (constraint != string.Empty) newLine += $" {constraint}";
+                    
+                    newLine += ";";
+                    
+                    if (commentIndex != -1) newLine += $" {comment}";
+                    
+                    result.Add(newLine.Trim());
+                    pinModelsCache.Remove(pin);
+                    found = true;
+                    break;
+                }
+
+                if (!found)
+                {
+                    result.Add($"# {line}");
+                }
+            }
+
+            result.AddRange(pinModelsCache.Select(pin => $"NET \"{pin.ConnectedNode!.Node.Name}\" Loc =  \"{pin.Pin.Name}\";"));
+            File.WriteAllLines(pcfPath, result);
+            CologneChipSettingsHelper.UpdateProjectOverlay(project);
+        }
+        catch (Exception e)
+        {
+            ContainerLocator.Container.Resolve<ILogger>().Error(e.Message, e);
+        }
     }
     
 }

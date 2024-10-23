@@ -50,7 +50,7 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
         if (_settings.TryGetValue(CologneChipConstantService.CologneChipLongTermModeKey, out var qPstOperation))
             _longTermModeSetting.Value = qPstOperation;
         
-        if (_settings.TryGetValue(CologneChipConstantService.CologneChipLongTermModeKey, out var qPstType))
+        if (_settings.TryGetValue(CologneChipConstantService.CologneChipTypeKey, out var qPstType))
             _typeSetting.Value = qPstType;
 
         SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_typeSetting));
