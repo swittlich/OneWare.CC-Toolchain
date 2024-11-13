@@ -89,6 +89,6 @@ public class CologneChipToolchain(CologneChipService cologneChipService) : IFpga
 
     public Task<bool> CompileAsync(UniversalFpgaProjectRoot project, FpgaModel fpga)
     {
-        return cologneChipService.SynthAsync(project, fpga);
+        return cologneChipService.CompileAsync(project, fpga);
     }
 }

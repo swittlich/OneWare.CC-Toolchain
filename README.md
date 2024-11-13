@@ -27,14 +27,31 @@ Thanks to Dr. Michael Gude from CologneChips AG for allowing us to integrate his
 
 # Known errors and workarounds
 
-# Yosys error code != 0
+## Yosys error code != 0
 The synthesis can run, but it can happen that the error code of the synthesis is not equal to 0. The normal behaviour of the program is then not to continue working with the P_R tool. In this case, however, it may be desirable to ignore the error code. 
 
 Can be set via Extras -> Setting -> Tools -> CologneChip -> ‘ignore an exit code not equal to 0 after synthesis’
 
-# Ignore UI for HardwarePin Mapping
+## Ignore UI for HardwarePin Mapping
 
 Currently, OneWare studio cannot always find all signals in and out of the Top Level Entity (see also this [issue on GitHub](https://github.com/one-ware/OneWare/issues/18)). 
 If this is the case, then the pin mapping cannot be done via the UI, which means that no CCF file can be generated or an existing mapping in an existing ccf file is overwritten with nothing or commented out. To prevent this, the ignoreGUI option has been introduced. 
 This can be set as follows:  
 Extras -> Setting -> Tools -> CologneChip -> ‘Ignore UI for HardwarePin Mapping’
+
+## OlimexEVB "fails to open device" on Windows
+
+```txt
+empty
+fails to open device
+JTAG init failed with: std::exception
+```
+Open On-Chip Debugger (OpenOCD) is used for DirtyJTag. This is not installed by default under windows with the openFPGALoader.
+
+It would be possible to install this tool on your system (untested).  
+[Here](https://openocd.org/pages/getting-openocd.html) is the link to the tool and [here](https://gnutoolchains.com/arm-eabi/openocd/) to the Windows binaries. 
+Please note that these are 3rd party binaries.
+
+Or the use of WSL (somewhat tested). For more information have a look at the [WSL guide](https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/docs/WSL.md).
+Just create a WSL Instance and follow [this MS guide](https://learn.microsoft.com/en-us/windows/wsl/connect-usb) to attach your board to a VM.
+Select the "useWSL" setting from the CologneChipLoader settings. 

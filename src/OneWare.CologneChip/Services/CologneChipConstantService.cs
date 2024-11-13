@@ -1,3 +1,5 @@
+using OneWare.Essentials.PackageManager;
+
 namespace OneWare.CologneChip.Services;
 
 public sealed class CologneChipConstantService
@@ -15,6 +17,8 @@ public sealed class CologneChipConstantService
     public static string CologneChipSettingsIgnoreGuiKey => "cologneChip_IgnoreGui";
     public static string CologneChipSettingsIgnoreSynthExitCode => "cologneChip_SynthExitCode";
 
+    public static string CologneChipSettingsUseWsl => "cologneChip_UseWSL";
+    
     public static string CologneChipDefaultConstraintFile => "project.ccf";
 
     public const string CcfTemplate = @"#
@@ -82,4 +86,105 @@ public sealed class CologneChipConstantService
             return "./build/";
         return $"{path.TrimEnd('/')}/build/";
     }
+    
+    public const string CCPathSetting = "CCCadSuite_Path";
+    
+    public static readonly Package CologneChipPackage = new()
+    {
+        Category = "Binaries",
+        Id = "colognechip",
+        Type = "NativeTool",
+        Name = "CologneChip Tools",
+        Description = "Open Source FPGA Tools",
+        License = "ISC",
+        IconUrl =
+            "https://avatars.githubusercontent.com/u/35169771?s=48&v=4",
+        Links =
+        [
+            new PackageLink
+            {
+                Name = "GitHub",
+                Url = "https://www.colognechip.com/docs/ug1002-toolchain-install-latest.pdf"
+            }
+        ],
+        Tabs =
+        [
+            new PackageTab()
+            {
+                Title = "Readme",
+                ContentUrl = "https://raw.githubusercontent.com/HendrikMennen/oss-cad-suite-build/main/README.md"
+            },
+            new PackageTab
+            {
+                Title = "License",
+                ContentUrl = "https://raw.githubusercontent.com/YosysHQ/oss-cad-suite-build/main/COPYING"
+            }
+        ],
+        Versions =
+        [
+            new PackageVersion
+            {
+                Version = "latest",
+                Targets =
+                [
+                    new PackageTarget
+                    {
+                        Target = "win-x64",
+                        Url =
+                            "https://colognechip.com/downloads/cc-toolchain-win.zip",
+                        AutoSetting =
+                        [
+                            new PackageAutoSetting
+                            {
+                                RelativePath = "cologne-chip",
+                                SettingKey = CCPathSetting
+                            }
+                        ]
+                    },
+                    new PackageTarget
+                    {
+                        Target = "linux-x64",
+                        Url =
+                            "https://colognechip.com/downloads/cc-toolchain-linux.zip",
+                        AutoSetting =
+                        [
+                            new PackageAutoSetting
+                            {
+                                RelativePath = "cologne-chip",
+                                SettingKey = CCPathSetting
+                            }
+                        ]
+                    },
+                    new PackageTarget
+                    {
+                        Target = "osx-x64",
+                        Url =
+                            "https://colognechip.com/downloads/cc-toolchain-linux.zip",
+                        AutoSetting =
+                        [
+                            new PackageAutoSetting
+                            {
+                                RelativePath = "cologne-chip",
+                                SettingKey = CCPathSetting
+                            }
+                        ]
+                    },
+                    new PackageTarget
+                    {
+                        Target = "osx-arm64",
+                        Url =
+                            "https://colognechip.com/downloads/cc-toolchain-linux.zip",
+                        AutoSetting =
+                        [
+                            new PackageAutoSetting
+                            {
+                                RelativePath = "cologne-chip",
+                                SettingKey = CCPathSetting
+                            }
+                        ]
+                    }
+                ]
+            },
+        ]
+    };
 }

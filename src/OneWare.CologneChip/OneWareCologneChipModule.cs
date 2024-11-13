@@ -1,5 +1,8 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.Input;
 using OneWare.CologneChip.Helpers;
 using OneWare.CologneChip.Services;
@@ -25,6 +28,10 @@ public class OneWareCologneChipModule : IModule
     public void OnInitialized(IContainerProvider containerProvider)
     {
         var settingsService = containerProvider.Resolve<ISettingsService>();
+        var projectExplorerService = containerProvider.Resolve<IProjectExplorerService>();
+        var cologneChipService = containerProvider.Resolve<CologneChipService>();
+        var fpgaService = containerProvider.Resolve<FpgaService>();
+        
         var defaultCologneChipPath = "./";
         
         var resourceInclude = new ResourceInclude(new Uri("avares://OneWare.CologneChip/Styles/Icons.axaml")) 
@@ -72,7 +79,7 @@ public class OneWareCologneChipModule : IModule
         containerProvider.Resolve<FpgaService>().RegisterToolchain<CologneChipToolchain>();
         containerProvider.Resolve<FpgaService>().RegisterLoader<CologneChipLoader>();
         containerProvider.Resolve<IProjectExplorerService>().Projects.CollectionChanged += CologneChipSettingsHelper.OnCollectionChanged;
-        
+        containerProvider.Resolve<IPackageService>().RegisterPackage(CologneChipConstantService.CologneChipPackage);
         
         settingsService.RegisterTitledFolderPath("Tools", "CologneChip", "CologneChip_Path",
             "CologneChip Toolchain Path",
@@ -104,6 +111,43 @@ public class OneWareCologneChipModule : IModule
         containerProvider.Resolve<ISettingsService>().RegisterTitled("Tools", "CologneChip",
             CologneChipConstantService.CologneChipSettingsIgnoreSynthExitCode, "Ignore an exit code not equal to 0 after the synthesis",
             "The Node loader sometimes does not recognize any outputs for capping. The GUI ignores this function and works exclusively with the ccf", false);
+        
+        containerProvider.Resolve<IWindowService>().RegisterUiExtension("UniversalFpgaToolBar_CompileMenuExtension",
+            new UiExtension(
+                x =>
+                {
+                    if (x is not UniversalFpgaProjectRoot { Toolchain: CologneChipToolchain } root) return null;
+
+                    var name = root.Properties["Fpga"]?.ToString();
+                    var fpgaPackage = fpgaService.FpgaPackages.FirstOrDefault(obj => obj.Name == name);
+                    var fpga = fpgaPackage?.LoadFpga();
+                    
+                    return new StackPanel()
+                    {
+                        Orientation = Orientation.Vertical,
+                        Children =
+                        {
+                            new MenuItem()
+                            {
+                                Header = "Run Synthesis",
+                                Command = new AsyncRelayCommand(async () =>
+                                {
+                                    // await projectExplorerService.SaveOpenFilesForProjectAsync(root);
+                                    await cologneChipService.SynthAsync(root, new FpgaModel(fpga!));
+                                }, () => fpga != null)
+                            },
+                            new MenuItem()
+                            {
+                                Header = "Run Place and Route",
+                                Command = new AsyncRelayCommand(async () =>
+                                {
+                                    // await projectExplorerService.SaveOpenFilesForProjectAsync(root);
+                                    await cologneChipService.PRAysnc(root, new FpgaModel(fpga!));
+                                }, () => fpga != null)
+                            },
+                        }
+                    };
+                }));
         
     }
             

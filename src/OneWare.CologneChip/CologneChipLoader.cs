@@ -23,15 +23,17 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
         PgmSpiMemory,
         PgmSpiFlash,
         PgmJTagFlash,
+        DirtyJTagMemory,
+        DirtyJTagFlash,
         IllegalState,
     }
 
-    private ProgrammerState GetProgrammerState(UniversalFpgaProjectRoot projectRoot)
+    private ProgrammerState GetProgrammerState(Dictionary<string, string> properties)
     {
-        var fpga = projectRoot.GetProjectProperty("Fpga");
-        if (fpga == null) return ProgrammerState.IllegalState;
+        // var fpga = projectRoot.GetProjectProperty("Fpga");
+        // if (fpga == null) return ProgrammerState.IllegalState;
         
-        var properties = FpgaSettingsParser.LoadSettings(projectRoot, fpga);
+        // var properties = FpgaSettingsParser.LoadSettings(projectRoot, fpga);
         var ccType = properties.GetValueOrDefault(CologneChipConstantService.CologneChipTypeKey) ?? "EVB";
         var longTermProgramming =
             settingsService.GetSettingValue<bool>("UniversalFpgaProjectSystem_LongTermProgramming");
@@ -77,6 +79,24 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
                     _ => ProgrammerState.IllegalState
                 };
             }
+            case true when ccType == "OlimexEVB":
+            {
+                return longTermMode switch
+                {
+                    "JTAG" => ProgrammerState.DirtyJTagFlash,
+                    "SPI" => ProgrammerState.DirtyJTagFlash,
+                    _ => ProgrammerState.IllegalState
+                };
+            }
+            case false when ccType == "OlimexEVB":
+            {
+                return shortTermMode switch
+                {
+                    "JTAG" => ProgrammerState.DirtyJTagMemory,
+                    "SPI" => ProgrammerState.DirtyJTagMemory,
+                    _ => ProgrammerState.IllegalState
+                };
+            }
             default:
                 return ProgrammerState.IllegalState;
         }
@@ -89,8 +109,11 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
         var topName = top.Split(".").First();
         var outputDir = project.FullPath;
         
+        var fpga = project.GetProjectProperty("Fpga");
+        var properties = FpgaSettingsParser.LoadSettings(project, fpga!);
+        var useWsl = bool.Parse(properties.GetValueOrDefault(CologneChipConstantService.CologneChipSettingsUseWsl) ?? "false");
         
-        var state = GetProgrammerState(project);
+        var state = GetProgrammerState(properties);
         
         List<string> fpgaArgs = [];
         var bitStreamPath = $"{CologneChipConstantService.Instance.GetBuildPath(project.RelativePath)}{topName}_00.cfg.bit";
@@ -121,12 +144,29 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
             case ProgrammerState.PgmSpiFlash:
                 fpgaArgs = ["-b", "gatemate_pgm_spi ", "-f", $"{bitStreamPath}"];
                 break;
+            case ProgrammerState.DirtyJTagMemory:
+                fpgaArgs = ["-c", "dirtyJtag",  $"{bitStreamPath}"];
+                break;
+            case ProgrammerState.DirtyJTagFlash:
+                fpgaArgs = ["-c", "dirtyJtag  ", "-f", $"{bitStreamPath}"];
+                break;
             case ProgrammerState.IllegalState:
                 logger.Error("IllegalState");
                 throw new Exception("IllegalState");
         }
         
-        await childProcessService.ExecuteShellAsync("openFPGALoader", fpgaArgs,
+        if (!useWsl) {
+        
+            await childProcessService.ExecuteShellAsync("openFPGALoader", fpgaArgs,
             outputDir, "Running Quartus programmer (Short-Term)...", AppState.Loading, true);
+        }
+        else
+        {
+            var args = fpgaArgs.ToList();
+            args.Insert(0, "sudo");
+            args.Insert(1, "openFPGALoader");
+            await childProcessService.ExecuteShellAsync("wsl", args,
+                outputDir, "Running Quartus programmer (Short-Term)...", AppState.Loading, true);
+        }
     }
 }
