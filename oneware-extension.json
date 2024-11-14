@@ -26,13 +26,13 @@
       "url": "https://github.com/swittlich/OneWare.CC-Toolchain"
     }
   ],
+  "sourceUrl": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download",
   "versions": [
     {
       "version": "0.1",
       "targets": [
         {
-          "target": "all",
-          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.1/OneWare.CologneChip_0.1_all.zip"
+          "target": "all"
         }
       ]
     },
@@ -40,8 +40,7 @@
       "version": "0.2",
       "targets": [
         {
-          "target": "all",
-          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.2/OneWare.CologneChip_0.2_all.zip"
+          "target": "all"
         }
       ]
     },
@@ -49,8 +48,7 @@
       "version": "0.3",
       "targets": [
         {
-          "target": "all",
-          "url": "https://github.com/swittlich/OneWare.CC-Toolchain/releases/download/0.3/OneWare.CologneChip_0.3_all.zip"
+          "target": "all"
         }
       ]
     }

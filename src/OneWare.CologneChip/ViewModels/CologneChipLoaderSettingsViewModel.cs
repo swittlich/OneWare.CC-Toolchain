@@ -1,3 +1,7 @@
+using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using DynamicData.Binding;
 using OneWare.CologneChip.Services;
 using OneWare.Essentials.Controls;
 using OneWare.Essentials.Models;
@@ -37,19 +41,27 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
         var defaultProperties = fpga.Properties;
         _settings = FpgaSettingsParser.LoadSettings(projectRoot, fpga.Name);
         
-        _typeSetting = new ComboBoxSetting("Type", "Board Type?",
+        _typeSetting = new ComboBoxSetting("Type",
             defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipTypeKey) ?? "", 
-            ["EVB", "Programmer", "OlimexEVB"]);
+            ["EVB", "Programmer", "OlimexEVB"])
+        {
+            MarkdownDocumentation = "Board Type?"
+        };
 
-        _shortTermModeSetting = new ComboBoxSetting("Short Term Mode", "Mode to use for Short Term Programming",
+        _shortTermModeSetting = new ComboBoxSetting("Short Term Mode",
             defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipShortTermModeKey) ?? "",
-            ["JTAG", "SPI"]);
+            ["JTAG", "SPI"])
+        {
+            MarkdownDocumentation = "Mode to use for Short Term Programming"
+        };
         
-        _longTermModeSetting = new ComboBoxSetting("Long Term Mode", "Mode to use for Long Term Programming",
-            defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipLongTermModeKey) ?? "", ["JTAG", "SPI"]);
+        _longTermModeSetting = new ComboBoxSetting("Long Term Mode",
+            defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipLongTermModeKey) ?? "", ["JTAG", "SPI"])
+        {
+            MarkdownDocumentation = "Mode to use for Long Term Programming",
+        };
         
-        _useWsl = new  TitledSetting("Use WSL (BETA Feature - Windows only)", "Use wsl", 
-            defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipLongTermModeKey) ?? "false");
+        _useWsl = new CheckBoxSetting("Use WSL (BETA Feature - Windows only)", false);
         
         if (_settings.TryGetValue(CologneChipConstantService.CologneChipShortTermModeKey, out var qPstMode))
             _typeSetting.Value = qPstMode;
@@ -63,12 +75,14 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
         if (_settings.TryGetValue(CologneChipConstantService.CologneChipSettingsUseWsl, out var useWsl))
             _useWsl.Value = useWsl;
         
-        SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_typeSetting));
-        SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_shortTermModeSetting));
-        SettingsCollection.SettingModels.Add(new ComboBoxSettingViewModel(_longTermModeSetting));
-        SettingsCollection.SettingModels.Add(new CheckBoxSettingViewModel(_useWsl));
+        SettingsCollection.SettingModels.Add(_typeSetting);
+        SettingsCollection.SettingModels.Add(_shortTermModeSetting);
+        SettingsCollection.SettingModels.Add(_longTermModeSetting);
+        
+        //Add WSL Setting only on Windows
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            SettingsCollection.SettingModels.Add(_useWsl);
     }
-    
     
     public void Save(FlexibleWindow flexibleWindow)
     {
@@ -86,7 +100,7 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
     {
         foreach (var setting in SettingsCollection.SettingModels)
         {
-            setting.Setting.Value = setting.Setting.DefaultValue;
+            setting.Value = setting.DefaultValue;
         }
     }
 }

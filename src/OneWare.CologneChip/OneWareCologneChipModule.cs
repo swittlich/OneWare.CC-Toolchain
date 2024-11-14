@@ -155,7 +155,6 @@ public class OneWareCologneChipModule : IModule
     {
         if (!Directory.Exists(path)) return false;
         
-        if (!File.Exists(Path.Combine(path, "VERSION"))) return false;
         if (!File.Exists(Path.Combine(path, "bin", "VERSION"))) return false;
         if (!Directory.Exists(Path.Combine(path, "bin", "yosys"))) return false;
         if (!Directory.Exists(Path.Combine(path, "bin", "p_r"))) return false;
