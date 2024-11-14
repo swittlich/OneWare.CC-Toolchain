@@ -60,8 +60,10 @@ public class CologneChipLoaderSettingsViewModel  : FlexibleWindowViewModelBase
         {
             MarkdownDocumentation = "Mode to use for Long Term Programming",
         };
+
+        bool.TryParse(defaultProperties.GetValueOrDefault(CologneChipConstantService.CologneChipSettingsUseWsl), out var defaultUseWsl);
         
-        _useWsl = new CheckBoxSetting("Use WSL (BETA Feature - Windows only)", false);
+        _useWsl = new CheckBoxSetting("Use WSL (BETA Feature - Windows only)", defaultUseWsl);
         
         if (_settings.TryGetValue(CologneChipConstantService.CologneChipShortTermModeKey, out var qPstMode))
             _typeSetting.Value = qPstMode;
