@@ -95,7 +95,7 @@ public sealed class CologneChipConstantService
         Id = "colognechip",
         Type = "NativeTool",
         Name = "CologneChip Tools",
-        Description = "Open Source FPGA Tools",
+        Description = "FPGA Tools for the GateMate FPGA",
         License = "ISC",
         IconUrl =
             "https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/Icon.png",
