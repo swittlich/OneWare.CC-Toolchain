@@ -81,11 +81,11 @@ public class OneWareCologneChipModule : IModule
         containerProvider.Resolve<IProjectExplorerService>().Projects.CollectionChanged += CologneChipSettingsHelper.OnCollectionChanged;
         containerProvider.Resolve<IPackageService>().RegisterPackage(CologneChipConstantService.CologneChipPackage);
         
-        settingsService.RegisterTitledFolderPath("Tools", "CologneChip", "CologneChip_Path",
+        settingsService.RegisterTitledFolderPath("Tools", "CologneChip", CologneChipConstantService.CcPathSetting,
             "CologneChip Toolchain Path",
             "Sets the path for CologneChip Toolchain", defaultCologneChipPath, null, null, IsCologneChipPathValid);
         
-        settingsService.GetSettingObservable<string>("CologneChip_Path").Subscribe(x =>
+        settingsService.GetSettingObservable<string>(CologneChipConstantService.CcPathSetting).Subscribe(x =>
         {
             if (string.IsNullOrEmpty(x)) return;
 

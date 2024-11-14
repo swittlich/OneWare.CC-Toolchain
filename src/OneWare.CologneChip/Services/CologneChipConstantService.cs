@@ -87,7 +87,7 @@ public sealed class CologneChipConstantService
         return $"{path.TrimEnd('/')}/build/";
     }
     
-    public const string CCPathSetting = "CCCadSuite_Path";
+    public const string CcPathSetting = "CCCadSuite_Path";
     
     public static readonly Package CologneChipPackage = new()
     {
@@ -98,7 +98,7 @@ public sealed class CologneChipConstantService
         Description = "Open Source FPGA Tools",
         License = "ISC",
         IconUrl =
-            "https://avatars.githubusercontent.com/u/35169771?s=48&v=4",
+            "https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/Icon.png",
         Links =
         [
             new PackageLink
@@ -112,7 +112,7 @@ public sealed class CologneChipConstantService
             new PackageTab()
             {
                 Title = "Readme",
-                ContentUrl = "https://raw.githubusercontent.com/HendrikMennen/oss-cad-suite-build/main/README.md"
+                ContentUrl = "https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/BinaryToolsReadme.md"
             },
             new PackageTab
             {
@@ -124,7 +124,7 @@ public sealed class CologneChipConstantService
         [
             new PackageVersion
             {
-                Version = "latest",
+                Version = "1.0",
                 Targets =
                 [
                     new PackageTarget
@@ -136,8 +136,8 @@ public sealed class CologneChipConstantService
                         [
                             new PackageAutoSetting
                             {
-                                RelativePath = "cologne-chip",
-                                SettingKey = CCPathSetting
+                                RelativePath = "cc-toolchain-win",
+                                SettingKey = CcPathSetting
                             }
                         ]
                     },
@@ -150,8 +150,8 @@ public sealed class CologneChipConstantService
                         [
                             new PackageAutoSetting
                             {
-                                RelativePath = "cologne-chip",
-                                SettingKey = CCPathSetting
+                                RelativePath = "cc-toolchain-linux",
+                                SettingKey = CcPathSetting
                             }
                         ]
                     },
@@ -164,8 +164,8 @@ public sealed class CologneChipConstantService
                         [
                             new PackageAutoSetting
                             {
-                                RelativePath = "cologne-chip",
-                                SettingKey = CCPathSetting
+                                RelativePath = "cc-toolchain-linux",
+                                SettingKey = CcPathSetting
                             }
                         ]
                     },
@@ -178,8 +178,8 @@ public sealed class CologneChipConstantService
                         [
                             new PackageAutoSetting
                             {
-                                RelativePath = "cologne-chip",
-                                SettingKey = CCPathSetting
+                                RelativePath = "cc-toolchain-linux",
+                                SettingKey = CcPathSetting
                             }
                         ]
                     }
