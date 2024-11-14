@@ -104,6 +104,11 @@ public sealed class CologneChipConstantService
             new PackageLink
             {
                 Name = "GitHub",
+                Url = "https://github.com/swittlich/OneWare.CC-Toolchain"
+            },
+            new PackageLink
+            {
+                Name = "User Guide",
                 Url = "https://www.colognechip.com/docs/ug1002-toolchain-install-latest.pdf"
             }
         ],
@@ -117,14 +122,14 @@ public sealed class CologneChipConstantService
             new PackageTab
             {
                 Title = "License",
-                ContentUrl = "https://raw.githubusercontent.com/YosysHQ/oss-cad-suite-build/main/COPYING"
+                ContentUrl = "https://raw.githubusercontent.com/swittlich/OneWare.CC-Toolchain/refs/heads/main/License.md"
             }
         ],
         Versions =
         [
             new PackageVersion
             {
-                Version = "1.0",
+                Version = "2024.10",
                 Targets =
                 [
                     new PackageTarget
