@@ -30,10 +30,6 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
 
     private ProgrammerState GetProgrammerState(Dictionary<string, string> properties)
     {
-        // var fpga = projectRoot.GetProjectProperty("Fpga");
-        // if (fpga == null) return ProgrammerState.IllegalState;
-        
-        // var properties = FpgaSettingsParser.LoadSettings(projectRoot, fpga);
         var ccType = properties.GetValueOrDefault(CologneChipConstantService.CologneChipTypeKey) ?? "EVB";
         var longTermProgramming =
             settingsService.GetSettingValue<bool>("UniversalFpgaProjectSystem_LongTermProgramming");
@@ -158,7 +154,7 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
         if (!useWsl) {
         
             await childProcessService.ExecuteShellAsync("openFPGALoader", fpgaArgs,
-            outputDir, "Running Quartus programmer (Short-Term)...", AppState.Loading, true);
+            outputDir, "Running OpenFPGALoader (Short-Term)...", AppState.Loading, true);
         }
         else
         {
@@ -166,7 +162,7 @@ public class CologneChipLoader(IChildProcessService childProcessService, ISettin
             args.Insert(0, "sudo");
             args.Insert(1, "openFPGALoader");
             await childProcessService.ExecuteShellAsync("wsl", args,
-                outputDir, "Running Quartus programmer (Short-Term)...", AppState.Loading, true);
+                outputDir, "Running openFPGALoader (Short-Term)...", AppState.Loading, true);
         }
     }
 }
