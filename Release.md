@@ -1,5 +1,8 @@
 # OneWare.CologneChip
 
+## Release 0.4
+- Update Dependencies 
+
 ## Release 0.3
 - ccf file can be selected from several ccf files in the project
 - Bugfix for Programmer / EVB selection
