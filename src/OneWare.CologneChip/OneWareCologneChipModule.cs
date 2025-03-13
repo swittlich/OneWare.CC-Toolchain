@@ -81,9 +81,15 @@ public class OneWareCologneChipModule : IModule
         containerProvider.Resolve<IProjectExplorerService>().Projects.CollectionChanged += CologneChipSettingsHelper.OnCollectionChanged;
         containerProvider.Resolve<IPackageService>().RegisterPackage(CologneChipConstantService.CologneChipPackage);
         
-        settingsService.RegisterTitledFolderPath("Tools", "CologneChip", CologneChipConstantService.CcPathSetting,
-            "CologneChip Toolchain Path",
-            "Sets the path for CologneChip Toolchain", defaultCologneChipPath, null, null, IsCologneChipPathValid);
+        containerProvider.Resolve<ISettingsService>().RegisterSetting("Tools", "CologneChip", 
+            CologneChipConstantService.CologneChipSettingsIgnoreGuiKey, new CheckBoxSetting("Ignore UI for HardwarePin Mapping", false));
+        
+        containerProvider.Resolve<ISettingsService>().RegisterSetting("Tools", "CologneChip", 
+            CologneChipConstantService.CologneChipSettingsIgnoreGuiKey, new CheckBoxSetting("Ignore an exit code not equal to 0 after the synthesis", false));
+        
+        
+        settingsService.RegisterSetting("Tools", "CologneChip", CologneChipConstantService.CcPathSetting, 
+            new FolderPathSetting("CologneChip Toolchain Path", defaultCologneChipPath, null, null, IsCologneChipPathValid));
         
         settingsService.GetSettingObservable<string>(CologneChipConstantService.CcPathSetting).Subscribe(x =>
         {
@@ -94,7 +100,7 @@ public class OneWareCologneChipModule : IModule
                 containerProvider.Resolve<ILogger>().Warning("CologneChip Toolchain path invalid", null, false);
                 return;
             }
-
+            
             var yosys = Path.Combine(x, "bin/yosys");
             var pr = Path.Combine(x, "bin/p_r");
             var openFpgaLoader = Path.Combine(x, "bin/openFPGALoader");
@@ -104,13 +110,8 @@ public class OneWareCologneChipModule : IModule
             ContainerLocator.Container.Resolve<IEnvironmentService>().SetPath("CC_openFPGALoader", openFpgaLoader);
         });
         
-        containerProvider.Resolve<ISettingsService>().RegisterTitled("Tools", "CologneChip",
-            CologneChipConstantService.CologneChipSettingsIgnoreGuiKey, "Ignore UI for HardwarePin Mapping",
-            "The Node loader sometimes does not recognize any outputs for capping. The GUI ignores this function and works exclusively with the ccf", false);
         
-        containerProvider.Resolve<ISettingsService>().RegisterTitled("Tools", "CologneChip",
-            CologneChipConstantService.CologneChipSettingsIgnoreSynthExitCode, "Ignore an exit code not equal to 0 after the synthesis",
-            "The Node loader sometimes does not recognize any outputs for capping. The GUI ignores this function and works exclusively with the ccf", false);
+        
         
         containerProvider.Resolve<IWindowService>().RegisterUiExtension("UniversalFpgaToolBar_CompileMenuExtension",
             new UiExtension(
