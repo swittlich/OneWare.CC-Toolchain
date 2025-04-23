@@ -1,5 +1,9 @@
 # OneWare.CologneChip
 
+## Release 0.5
+- Update Dependencies
+- Fix key duplication bug
+
 ## Release 0.4
 - Update Dependencies 
 
