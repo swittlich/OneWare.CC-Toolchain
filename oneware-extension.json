@@ -59,6 +59,14 @@
           "target": "all"
         }
       ]
+    },
+    {
+      "version": "0.5",
+      "targets": [
+        {
+          "target": "all"
+        }
+      ]
     }
   ]
 }
