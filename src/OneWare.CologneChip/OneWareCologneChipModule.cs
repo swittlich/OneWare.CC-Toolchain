@@ -81,13 +81,6 @@ public class OneWareCologneChipModule : IModule
         containerProvider.Resolve<IProjectExplorerService>().Projects.CollectionChanged += CologneChipSettingsHelper.OnCollectionChanged;
         containerProvider.Resolve<IPackageService>().RegisterPackage(CologneChipConstantService.CologneChipPackage);
         
-        containerProvider.Resolve<ISettingsService>().RegisterSetting("Tools", "CologneChip", 
-            CologneChipConstantService.CologneChipSettingsIgnoreGuiKey, new CheckBoxSetting("Ignore UI for HardwarePin Mapping", false));
-        
-        containerProvider.Resolve<ISettingsService>().RegisterSetting("Tools", "CologneChip", 
-            CologneChipConstantService.CologneChipSettingsIgnoreGuiKey, new CheckBoxSetting("Ignore an exit code not equal to 0 after the synthesis", false));
-        
-        
         settingsService.RegisterSetting("Tools", "CologneChip", CologneChipConstantService.CcPathSetting, 
             new FolderPathSetting("CologneChip Toolchain Path", defaultCologneChipPath, null, null, IsCologneChipPathValid));
         
@@ -110,7 +103,12 @@ public class OneWareCologneChipModule : IModule
             ContainerLocator.Container.Resolve<IEnvironmentService>().SetPath("CC_openFPGALoader", openFpgaLoader);
         });
         
+        containerProvider.Resolve<ISettingsService>().RegisterSetting("Tools", "CologneChip", 
+            CologneChipConstantService.CologneChipSettingsIgnoreGuiKey, new CheckBoxSetting("Ignore UI for HardwarePin Mapping", false));
         
+        containerProvider.Resolve<ISettingsService>().RegisterSetting("Tools", "CologneChip", 
+            CologneChipConstantService.CologneChipSettingsIgnoreSynthExitCode, new CheckBoxSetting("Ignore an exit code not equal to 0 after the synthesis", false));
+
         
         
         containerProvider.Resolve<IWindowService>().RegisterUiExtension("UniversalFpgaToolBar_CompileMenuExtension",
