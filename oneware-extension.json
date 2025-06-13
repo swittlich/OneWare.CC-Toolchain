@@ -67,6 +67,14 @@
           "target": "all"
         }
       ]
+    },
+    {
+      "version": "0.6",
+      "targets": [
+        {
+          "target": "all"
+        }
+      ]
     }
   ]
 }

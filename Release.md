@@ -1,5 +1,8 @@
 # OneWare.CologneChip
 
+## Release 0.6
+- Update Dependencies for OW Studio Version 21.3.0
+
 ## Release 0.5
 - Update Dependencies
 - Fix key duplication bug
