@@ -195,6 +195,16 @@ public class OneWareCologneChipModule : IModule
                                     await cologneChipService.PackAysnc(root, new FpgaModel(fpga!)); 
                                 }, () => fpga != null)
                             },
+                            new Separator(),
+                            new MenuItem()
+                            {
+                                Header = "Open nextpnr GUI",
+                                Command = new AsyncRelayCommand(async () =>
+                                {
+                                    // await projectExplorerService.SaveOpenFilesForProjectAsync(root);
+                                    await cologneChipService.PackAysnc(root, new FpgaModel(fpga!)); 
+                                }, () => fpga != null)
+                            },
                         }
                     };
                 }));

@@ -46,6 +46,7 @@ public class CcNextpnrCompileStrategy : CcCompileStrategyBase
     {
         return ("nextpnr-himbaechel",
             new List<string> {
+                "--gui",
                 "--device=CCGM1A1",
                 "--json", $"{topName}.json",
                 "-o", $"ccf=./../{ccfFile}",
@@ -53,6 +54,7 @@ public class CcNextpnrCompileStrategy : CcCompileStrategyBase
                 "--router=router2"
             });
     }
+    
 
     public override async Task<bool> PackAsync(UniversalFpgaProjectRoot project, FpgaModel fpgaModel)
     {
